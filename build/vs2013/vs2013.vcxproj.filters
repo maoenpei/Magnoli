@@ -4,16 +4,31 @@
     <Filter Include="src">
       <UniqueIdentifier>{de55c85d-7b97-4916-9efb-ed7bdcadd5f0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="LargeInteger">
+      <UniqueIdentifier>{7cc630d0-d4d5-4605-9787-a98324a1261b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\main.cpp">
       <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\LargeInteger\LargeIntegerData.cpp">
+      <Filter>LargeInteger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\LargeInteger\TlsUtil.cpp">
+      <Filter>LargeInteger</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\large_int\large_int.cpp">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\LargeInteger\TlsUtil.h">
+      <Filter>LargeInteger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\LargeInteger\LargeIntegerData.h">
+      <Filter>LargeInteger</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\large_int\large_int.h">
       <Filter>src</Filter>
     </ClInclude>
