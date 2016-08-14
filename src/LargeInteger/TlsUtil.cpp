@@ -25,36 +25,36 @@ namespace mag
     {
         struct TlsUserData
         {
-            TlsData* pKey;
+            TlsUtil* pKey;
             void* pVal;
         };
 
-        void* TlsData::get()
+        void* TlsUtil::get()
         {
-            void* val = tlsGet(m_Key);
-            if (!val) {
-                TlsUserData* userData = new TlsUserData();
+            TlsUserData* userData = reinterpret_cast<TlsUserData*>(tlsGet(m_Key));
+            if (!userData) {
+                userData = new TlsUserData();
                 userData->pKey = this;
                 userData->pVal = m_CreateFunctor();
-                tlsSet(m_Key, userData);
+                tlsSet(m_Key, reinterpret_cast<void*>(userData));
             }
-            return val;
+            return userData->pVal;
         }
 
-        void TlsData::tls_destructor(void* data) {
+        void TlsUtil::tls_destructor(void* data) {
             TlsUserData* userData = reinterpret_cast<TlsUserData*>(data);
             userData->pKey->m_DestroyFunctor(userData->pVal);
             delete userData;
         }
 
-        TlsData::TlsData(TlsCreateFunc createFunctor, TlsDestroyFunc destroyFunctor)
+        TlsUtil::TlsUtil(TlsCreateFunc createFunctor, TlsDestroyFunc destroyFunctor)
             : m_CreateFunctor(createFunctor)
             , m_DestroyFunctor(destroyFunctor)
         {
             m_Key = tlsCreateKey(tls_destructor);
         }
 
-        TlsData::~TlsData()
+        TlsUtil::~TlsUtil()
         {
             tlsDeleteKey(m_Key);
         }

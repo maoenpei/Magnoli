@@ -9,13 +9,13 @@ namespace mag
         using TlsCreateFunc = std::function<void*(void)>;
         using TlsDestroyFunc = std::function<void(void*)>;
 
-        class TlsData
+        class TlsUtil
         {
         public:
             void* get();
 
-            TlsData(TlsCreateFunc createFunctor, TlsDestroyFunc destroyFunctor);
-            ~TlsData();
+            TlsUtil(TlsCreateFunc createFunctor, TlsDestroyFunc destroyFunctor);
+            ~TlsUtil();
 
         protected:
             static void tls_destructor(void* data);

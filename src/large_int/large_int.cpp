@@ -85,7 +85,7 @@ static void divide_internal_single(LargeIntegerData& result, LargeIntegerData& r
 static void divide_internal_lshift_int(LargeIntegerData& result, const LargeIntegerData&x, int shift)
 {
     result.reset(x.dim + shift);
-    memmove(&result.data[shift], &x.data[0], SIZ(result.dim));
+    memmove(&result.data[shift], &x.data[0], SIZ(x.dim));
 }
 
 static int divide_internal_reduce_fraction(LargeIntegerData& x, LargeIntegerData& y)
@@ -238,9 +238,7 @@ void divide_internal_sub(LargeIntegerData& result, const LargeIntegerData& x, co
     for (int i = 0; i < x.dim; ++i) {
         LargeIntegerData::Integer yi = (i < y.dim ? y.data[i] : 0);
         result.data[i] = x.data[i] - abdicate - yi;
-        if (x.data[i] < abdicate || x.data[i] - abdicate < yi) {
-            abdicate = 1;
-        }
+        abdicate = (x.data[i] < abdicate || x.data[i] - abdicate < yi);
     }
     result.finish();
 }

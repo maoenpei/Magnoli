@@ -21,6 +21,12 @@
     <ClCompile Include="..\..\src\large_int\large_int.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\LargeInteger\MemUtil.cpp">
+      <Filter>LargeInteger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\LargeInteger\LargeInteger.cpp">
+      <Filter>LargeInteger</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\LargeInteger\TlsUtil.h">
@@ -31,6 +37,15 @@
     </ClInclude>
     <ClInclude Include="..\..\src\large_int\large_int.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\LargeInteger\MemUtil.h">
+      <Filter>LargeInteger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\LargeInteger\LargeInteger.h">
+      <Filter>LargeInteger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\LargeInteger\PosUtil.h">
+      <Filter>LargeInteger</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -69,22 +69,29 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>pthreadVSE2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\LargeInteger\LargeIntegerData.cpp" />
+    <ClCompile Include="..\..\src\LargeInteger\LargeInteger.cpp" />
+    <ClCompile Include="..\..\src\LargeInteger\MemUtil.cpp" />
     <ClCompile Include="..\..\src\LargeInteger\TlsUtil.cpp" />
     <ClCompile Include="..\..\src\large_int\large_int.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\LargeInteger\LargeIntegerData.h" />
+    <ClInclude Include="..\..\src\LargeInteger\LargeInteger.h" />
+    <ClInclude Include="..\..\src\LargeInteger\MemUtil.h" />
+    <ClInclude Include="..\..\src\LargeInteger\PosUtil.h" />
     <ClInclude Include="..\..\src\LargeInteger\TlsUtil.h" />
     <ClInclude Include="..\..\src\large_int\large_int.h" />
   </ItemGroup>
