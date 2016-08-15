@@ -186,7 +186,16 @@ namespace mag
                 int diml = val.dim - val2.dim;
                 LargeIntegerData::IntegerType guess;
                 LargeIntegerData::DoubleIntType* pdvd = reinterpret_cast<LargeIntegerData::DoubleIntType*>(&val.data[val.dim - 2]);
-                if (val.data[val.dim - 1] >= val2.data[val2.dim - 1]) {
+                if (val.data[val.dim - 1] == val2.data[val2.dim - 1]) {
+                    if (val.data[val.dim - 2] >= val2.data[val2.dim - 2]) {
+                        LargeIntegerData::DoubleIntType* pdsr = reinterpret_cast<LargeIntegerData::DoubleIntType*>(&val2.data[val2.dim - 2]);
+                        guess = static_cast<LargeIntegerData::IntegerType>((*pdvd) / (*pdsr));
+                    } else {
+                        -- diml;
+                        guess = static_cast<LargeIntegerData::IntegerType>((*pdvd) / (val2.data[val2.dim - 1] + 1));
+                        guess += ((~LargeIntegerData::IntegerType(0)) - guess) >> 1;
+                    }
+                } else if (val.data[val.dim - 1] > val2.data[val2.dim - 1]) {
                     LargeIntegerData::DoubleIntType* pdsr = reinterpret_cast<LargeIntegerData::DoubleIntType*>(&val2.data[val2.dim - 2]);
                     guess = static_cast<LargeIntegerData::IntegerType>((*pdvd) / (*pdsr));
                 } else {
