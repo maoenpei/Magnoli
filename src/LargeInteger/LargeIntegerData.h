@@ -10,6 +10,10 @@ namespace mag
         using IntegerType = unsigned int;
         using DoubleIntType = std::conditional<sizeof(int) == sizeof(long), unsigned long long, unsigned long>::type;
         static const int IntBitCount = sizeof(IntegerType) * 8;
+        static const IntegerType IntegerZero = IntegerType(0);
+        static const IntegerType IntegerMax = ~IntegerZero;
+        static const DoubleIntType DoubleIntZero = DoubleIntType(0);
+        static const DoubleIntType DoubleIntMax = ~DoubleIntZero;
 
         IntegerType* data;
         int dim;
@@ -63,7 +67,11 @@ namespace mag
     {
         int size;
         LargeIntegerDataStorage();
+        LargeIntegerDataStorage(const LargeIntegerDataStorage& copy);
         ~LargeIntegerDataStorage();
+
+    private:
+        void* threadEnv;
 
     protected:
         virtual void alloc(int dim) override;

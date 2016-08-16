@@ -38,8 +38,8 @@ namespace mag
             int dim = std::min(val.dim, val2.dim);
             for (int i = 0; i < dim; ++i) {
                 if (val.data[i] != 0 || val2.data[i] != 0) {
-                    memmove(&val.data[0], &val.data[i], SIZ(i));
-                    memmove(&val2.data[0], &val2.data[i], SIZ(i));
+                    memmove(&val.data[0], &val.data[i], SIZ(val.dim - i));
+                    memmove(&val2.data[0], &val2.data[i], SIZ(val2.dim - i));
                     val.dim -= i;
                     val2.dim -= i;
                     return i;
@@ -89,9 +89,9 @@ namespace mag
 
         inline static void internal_subtract(LargeIntegerData& val, const LargeIntegerData& val2)
         {
-            LargeIntegerData::IntegerType abdicate = 0;
+            LargeIntegerData::IntegerType abdicate = LargeIntegerData::IntegerZero;
             for (int i = 0; i < val.dim; ++i) {
-                LargeIntegerData::IntegerType tmp = (i < val2.dim ? val2.data[i] : 0);
+                LargeIntegerData::IntegerType tmp = (i < val2.dim ? val2.data[i] : LargeIntegerData::IntegerZero);
                 LargeIntegerData::IntegerType tmp2 = val.data[i] - abdicate - tmp;
                 abdicate = (val.data[i] < tmp || val.data[i] - tmp < abdicate);
                 val.data[i] = tmp2;
@@ -136,11 +136,11 @@ namespace mag
 
         inline static void internal_add_lshift(LargeIntegerData& result, LargeIntegerData::IntegerType val, int shift)
         {
-            LargeIntegerData::IntegerType carry = 0;
+            LargeIntegerData::IntegerType carry = LargeIntegerData::IntegerZero;
             for (int i = shift; i < result.dim; ++i) {
-                LargeIntegerData::IntegerType tmp = i == shift ? val : 0;
+                LargeIntegerData::IntegerType tmp = i == shift ? val : LargeIntegerData::IntegerZero;
                 LargeIntegerData::IntegerType tmp2 = result.data[i] + carry + tmp;
-                carry = (result.data[i] > ~LargeIntegerData::IntegerType(0) - tmp || result.data[i] + tmp > ~LargeIntegerData::IntegerType(0) - carry);
+                carry = (result.data[i] > LargeIntegerData::IntegerMax - tmp || result.data[i] + tmp > LargeIntegerData::IntegerMax - carry);
                 result.data[i] = tmp2;
                 if (!carry) {
                     break;
@@ -150,9 +150,9 @@ namespace mag
 
         inline static void internal_subtract_lshift(LargeIntegerData& result, LargeIntegerData::IntegerType val, int shift)
         {
-            LargeIntegerData::IntegerType abdicate = 0;
+            LargeIntegerData::IntegerType abdicate = LargeIntegerData::IntegerZero;
             for (int i = shift; i < result.dim; ++i) {
-                LargeIntegerData::IntegerType tmp = (i == shift ? val : 0);
+                LargeIntegerData::IntegerType tmp = (i == shift ? val : LargeIntegerData::IntegerZero);
                 LargeIntegerData::IntegerType tmp2 = result.data[i] - abdicate - tmp;
                 abdicate = (result.data[i] < tmp || result.data[i] - tmp < abdicate);
                 result.data[i] = tmp2;
@@ -185,23 +185,23 @@ namespace mag
             do {
                 int diml = val.dim - val2.dim;
                 LargeIntegerData::IntegerType guess;
-                LargeIntegerData::DoubleIntType* pdvd = reinterpret_cast<LargeIntegerData::DoubleIntType*>(&val.data[val.dim - 2]);
+                LargeIntegerData::DoubleIntType& dvd = *reinterpret_cast<LargeIntegerData::DoubleIntType*>(&val.data[val.dim - 2]);
                 if (val.data[val.dim - 1] == val2.data[val2.dim - 1]) {
                     if (val.data[val.dim - 2] >= val2.data[val2.dim - 2]) {
-                        LargeIntegerData::DoubleIntType* pdsr = reinterpret_cast<LargeIntegerData::DoubleIntType*>(&val2.data[val2.dim - 2]);
-                        guess = static_cast<LargeIntegerData::IntegerType>((*pdvd) / (*pdsr));
+                        LargeIntegerData::DoubleIntType& pdsr = *reinterpret_cast<LargeIntegerData::DoubleIntType*>(&val2.data[val2.dim - 2]);
+                        guess = static_cast<LargeIntegerData::IntegerType>(dvd / pdsr);
                     } else {
                         -- diml;
-                        guess = static_cast<LargeIntegerData::IntegerType>((*pdvd) / (val2.data[val2.dim - 1] + 1));
-                        guess += ((~LargeIntegerData::IntegerType(0)) - guess) >> 1;
+                        guess = static_cast<LargeIntegerData::IntegerType>(dvd / (val2.data[val2.dim - 1] + 1));
+                        guess += (LargeIntegerData::IntegerMax - guess) >> 1;
                     }
                 } else if (val.data[val.dim - 1] > val2.data[val2.dim - 1]) {
-                    LargeIntegerData::DoubleIntType* pdsr = reinterpret_cast<LargeIntegerData::DoubleIntType*>(&val2.data[val2.dim - 2]);
-                    guess = static_cast<LargeIntegerData::IntegerType>((*pdvd) / (*pdsr));
+                    LargeIntegerData::DoubleIntType& pdsr = *reinterpret_cast<LargeIntegerData::DoubleIntType*>(&val2.data[val2.dim - 2]);
+                    guess = static_cast<LargeIntegerData::IntegerType>(dvd / pdsr);
                 } else {
                     -- diml;
-                    LargeIntegerData::IntegerType* pdsr = &val2.data[val2.dim - 1];
-                    guess = static_cast<LargeIntegerData::IntegerType>((*pdvd) / (*pdsr));
+                    LargeIntegerData::IntegerType& pdsr = val2.data[val2.dim - 1];
+                    guess = static_cast<LargeIntegerData::IntegerType>(dvd / pdsr);
                 }
                 if (hasQuot) {
                     (nag ? internal_subtract_lshift(quot, guess, diml) : internal_add_lshift(quot, guess, diml));
@@ -216,7 +216,7 @@ namespace mag
 
             if (nag) {
                 if (hasQuot) {
-                    internal_subtract_lshift(quot, 1, 0);
+                    internal_subtract_lshift(quot, LargeIntegerData::IntegerType(1), 0);
                 }
                 if (hasRemain) {
                     tmp.reset(val2);
@@ -233,7 +233,7 @@ namespace mag
         inline static void internal_divide_single(LargeIntegerData& quot, LargeIntegerData& val, LargeIntegerData::IntegerType val2)
         {
             if (hasQuot) {
-                if (val.data[val.dim - 1] > val2) {
+                if (val.data[val.dim - 1] >= val2) {
                     quot.reset(val.dim);
                     quot.data[val.dim - 1] = val.data[val.dim - 1] / val2;
                 } else {
@@ -249,7 +249,7 @@ namespace mag
                 }
                 val.data[i] = static_cast<LargeIntegerData::IntegerType>(temp % val2);
                 if (hasRemain) {
-                    val.data[i+1] = 0;
+                    val.data[i+1] = LargeIntegerData::IntegerZero;
                 }
             }
 
@@ -286,7 +286,7 @@ namespace mag
                 internal_divide_multiple2<hasQuot, hasRemain>(quot, divided, divisor);
             }
 
-            if (hasRemain) {
+            if (hasRemain && !is_zero(divided)) {
                 internal_lshift_int(remain, divided, shift);
             }
         }

@@ -10,9 +10,9 @@ int main(int argc, char** argv)
     v4.reset(3);
     v4.data[2] = 101;
     v4.data[0] = 0xffffffff;
-    for (int i = 0; i<10000000; ++i) {
+    //for (int i = 0; i<10000000; ++i) {
         mag::multiprecision::divide(v1, v3, v4);
         mag::multiprecision::modulo(v2, v3, v4);
-    }
+    //}
 	return 0;
 }

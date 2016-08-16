@@ -2,9 +2,12 @@
 
 #include "MemUtil.h"
 #include "TlsUtil.h"
+#include <assert.h>
 #include <algorithm>
 #include <map>
 #include <vector>
+
+#define ASSERT_INT(EXP, ...)        assert(EXP)
 
 namespace mag
 {
@@ -80,13 +83,22 @@ namespace mag
 
     LargeIntegerDataStorage::LargeIntegerDataStorage()
         : size(0)
+        , threadEnv(&MemAllocator::current())
     {
         reset(1);
+    }
+
+    LargeIntegerDataStorage::LargeIntegerDataStorage(const LargeIntegerDataStorage& copy)
+        : LargeIntegerDataStorage()
+    {
+        ASSERT_INT(threadEnv == copy.threadEnv);
+        reset(copy);
     }
 
     LargeIntegerDataStorage::~LargeIntegerDataStorage()
     {
         if (size) {
+            ASSERT_INT(threadEnv == reinterpret_cast<void*>(&MemAllocator::current()));
             MemAllocator::current().GetBlockManager(size).returnBack(data);
         }
     }
@@ -94,6 +106,7 @@ namespace mag
     void LargeIntegerDataStorage::alloc(int dim)
     {
         if (dim > size) {
+            ASSERT_INT(threadEnv == reinterpret_cast<void*>(&MemAllocator::current()));
             if (size) {
                 MemAllocator::current().GetBlockManager(size).returnBack(data);
             }
