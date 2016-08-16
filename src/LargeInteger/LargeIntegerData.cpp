@@ -85,7 +85,13 @@ namespace mag
         : size(0)
         , threadEnv(&MemAllocator::current())
     {
+    }
+
+    LargeIntegerDataStorage::LargeIntegerDataStorage(IntegerType val)
+        : LargeIntegerDataStorage()
+    {
         reset(1);
+        data[0] = val;
     }
 
     LargeIntegerDataStorage::LargeIntegerDataStorage(const LargeIntegerDataStorage& copy)
@@ -95,12 +101,37 @@ namespace mag
         reset(copy);
     }
 
+    LargeIntegerDataStorage::LargeIntegerDataStorage(LargeIntegerDataStorage&& copy)
+        : LargeIntegerDataStorage()
+    {
+        ASSERT_INT(threadEnv == copy.threadEnv);
+        std::swap(data, copy.data);
+        std::swap(dim, copy.dim);
+        std::swap(size, copy.size);
+    }
+
     LargeIntegerDataStorage::~LargeIntegerDataStorage()
     {
         if (size) {
             ASSERT_INT(threadEnv == reinterpret_cast<void*>(&MemAllocator::current()));
             MemAllocator::current().GetBlockManager(size).returnBack(data);
         }
+    }
+
+    LargeIntegerDataStorage& LargeIntegerDataStorage::operator =(const LargeIntegerDataStorage& copy)
+    {
+        ASSERT_INT(threadEnv == copy.threadEnv);
+        reset(copy);
+        return *this;
+    }
+
+    LargeIntegerDataStorage& LargeIntegerDataStorage::operator =(LargeIntegerDataStorage&& copy)
+    {
+        ASSERT_INT(threadEnv == copy.threadEnv);
+        std::swap(data, copy.data);
+        std::swap(dim, copy.dim);
+        std::swap(size, copy.size);
+        return *this;
     }
 
     void LargeIntegerDataStorage::alloc(int dim)

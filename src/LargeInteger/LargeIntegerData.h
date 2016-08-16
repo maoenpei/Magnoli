@@ -67,8 +67,13 @@ namespace mag
     {
         int size;
         LargeIntegerDataStorage();
+        LargeIntegerDataStorage(IntegerType val);
         LargeIntegerDataStorage(const LargeIntegerDataStorage& copy);
+        LargeIntegerDataStorage(LargeIntegerDataStorage&& copy);
         ~LargeIntegerDataStorage();
+
+        LargeIntegerDataStorage& operator =(const LargeIntegerDataStorage& copy);
+        LargeIntegerDataStorage& operator =(LargeIntegerDataStorage&& copy);
 
     private:
         void* threadEnv;

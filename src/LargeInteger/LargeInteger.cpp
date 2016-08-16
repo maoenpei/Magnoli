@@ -259,7 +259,7 @@ namespace mag
         }
 
         template <bool hasQuot, bool hasRemain>
-        inline static void internal_divide(LargeIntegerData& quot, LargeIntegerData& remain, LargeIntegerData& val, LargeIntegerData& val2)
+        inline static void internal_divide(LargeIntegerData& quot, LargeIntegerData& remain, const LargeIntegerData& val, const LargeIntegerData& val2)
         {
             if (internal_less_than(val, val2)) {
                 if (hasQuot) {
@@ -291,14 +291,19 @@ namespace mag
             }
         }
 
-        void divide(LargeIntegerData& result, LargeIntegerData& val, LargeIntegerData& val2)
+        bool is_same(const LargeIntegerData& val, const LargeIntegerData& val2)
+        {
+            return val.dim == val2.dim && 0 == memcmp(val.data, val2.data, SIZ(val.dim));
+        }
+
+        void divide(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2)
         {
             LargeIntegerDataTmp tmp;
             internal_divide<true, false>(result, tmp, val, val2);
             LargeIntegerDataTmp::clearCache();
         }
 
-        void modulo(LargeIntegerData& result, LargeIntegerData& val, LargeIntegerData& val2)
+        void modulo(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2)
         {
             LargeIntegerDataTmp tmp;
             internal_divide<false, true>(tmp, result, val, val2);
