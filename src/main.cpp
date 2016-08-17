@@ -22,7 +22,6 @@ int main(int argc, char** argv)
     l4.m_data.data[0] = 0xffffffff;
     auto l1 = l3 / l4;
     auto l2 = l3 % l4;
-    auto t = l1 == l2;
-    auto tt = l1 == l1;
+    l1++;
 	return 0;
 }

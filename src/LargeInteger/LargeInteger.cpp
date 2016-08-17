@@ -23,16 +23,6 @@ namespace mag
             return false;
         }
 
-        inline static bool internal_greater_than(const LargeIntegerData& val, const LargeIntegerData& val2)
-        {
-            return internal_compare<>(val, val2, std::greater<>());
-        }
-
-        inline static bool internal_less_than(const LargeIntegerData& val, const LargeIntegerData& val2)
-        {
-            return internal_compare<>(val, val2, std::less<>());
-        }
-
         inline static int internal_reduce_fraction(LargeIntegerData& val, LargeIntegerData& val2)
         {
             int dim = std::min(val.dim, val2.dim);
@@ -134,7 +124,7 @@ namespace mag
             } while(!internal_compare(val, val2, ls));
         }
 
-        inline static void internal_add_lshift(LargeIntegerData& result, LargeIntegerData::IntegerType val, int shift)
+        inline static void internal_plus_lshift(LargeIntegerData& result, LargeIntegerData::IntegerType val, int shift)
         {
             LargeIntegerData::IntegerType carry = LargeIntegerData::IntegerZero;
             for (int i = shift; i < result.dim; ++i) {
@@ -204,7 +194,7 @@ namespace mag
                     guess = static_cast<LargeIntegerData::IntegerType>(dvd / pdsr);
                 }
                 if (hasQuot) {
-                    (nag ? internal_subtract_lshift(quot, guess, diml) : internal_add_lshift(quot, guess, diml));
+                    (nag ? internal_subtract_lshift(quot, guess, diml) : internal_plus_lshift(quot, guess, diml));
                 }
                 internal_multiply_single_lshift(tmp, val2, guess, diml);
                 if (internal_compare(val, tmp, ls)) {
@@ -261,7 +251,7 @@ namespace mag
         template <bool hasQuot, bool hasRemain>
         inline static void internal_divide(LargeIntegerData& quot, LargeIntegerData& remain, const LargeIntegerData& val, const LargeIntegerData& val2)
         {
-            if (internal_less_than(val, val2)) {
+            if (internal_compare(val, val2, std::less<>())) {
                 if (hasQuot) {
                     quot.reset(1);
                 }
@@ -286,14 +276,55 @@ namespace mag
                 internal_divide_multiple2<hasQuot, hasRemain>(quot, divided, divisor);
             }
 
-            if (hasRemain && !is_zero(divided)) {
-                internal_lshift_int(remain, divided, shift);
+            if (hasRemain) {
+                if (is_zero(divided)) {
+                    remain.reset(divided);
+                } else {
+                    internal_lshift_int(remain, divided, shift);
+                }
             }
         }
 
-        bool is_same(const LargeIntegerData& val, const LargeIntegerData& val2)
+        bool is_equal_to(const LargeIntegerData& val, const LargeIntegerData& val2)
         {
             return val.dim == val2.dim && 0 == memcmp(val.data, val2.data, SIZ(val.dim));
+        }
+
+        bool is_less_than(const LargeIntegerData& val, const LargeIntegerData& val2)
+        {
+            return internal_compare(val, val2, std::less<>());
+        }
+
+        bool is_greater_than(const LargeIntegerData& val, const LargeIntegerData& val2)
+        {
+            return internal_compare(val, val2, std::greater<>());
+        }
+
+        void plus(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2)
+        {
+            int dim = std::max(val.dim, val2.dim);
+            LargeIntegerData::IntegerType carry = LargeIntegerData::IntegerZero;
+            result.reset(dim + 1);
+            for (int i = 0; i < dim; ++i) {
+                LargeIntegerData::IntegerType tmp = (i < val.dim ? val.data[i] : LargeIntegerData::IntegerZero);
+                LargeIntegerData::IntegerType tmp2 = (i < val2.dim ? val2.data[i] : LargeIntegerData::IntegerZero);
+                result.data[i] = tmp + tmp2 + carry;
+                carry = (tmp > LargeIntegerData::IntegerMax - tmp2 ||
+                         tmp + tmp2 > LargeIntegerData::IntegerMax - carry);
+            }
+            result.data[dim] = carry;
+            result.finalize();
+        }
+
+        void subtract(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2)
+        {
+            if (internal_compare(val, val2, std::less<>())) {
+                result.reset(val2);
+                internal_subtract(result, val);
+            } else {
+                result.reset(val);
+                internal_subtract(result, val2);
+            }
         }
 
         void divide(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2)

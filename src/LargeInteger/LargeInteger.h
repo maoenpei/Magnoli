@@ -12,7 +12,14 @@ namespace mag
             return val.dim == 1 && val.data[0] == LargeIntegerData::IntegerZero;
         }
 
-        bool is_same(const LargeIntegerData& val, const LargeIntegerData& val2);
+        bool is_equal_to(const LargeIntegerData& val, const LargeIntegerData& val2);
+        bool is_less_than(const LargeIntegerData& val, const LargeIntegerData& val2);
+        bool is_greater_than(const LargeIntegerData& val, const LargeIntegerData& val2);
+
+        void plus(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2);
+        void subtract(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2);
+
+        void multiply(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2);
         void divide(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2);
         void modulo(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2);
     }
@@ -32,9 +39,15 @@ namespace mag
         inline LargeInteger& operator =(const LargeInteger& copy);
         inline LargeInteger& operator =(LargeInteger&& copy);
 
-        inline bool operator == (const LargeInteger& other);
-        inline bool operator != (const LargeInteger& other);
+        inline bool operator ==(const LargeInteger& other);
+        inline bool operator !=(const LargeInteger& other);
 
+        inline LargeInteger& operator ++();
+        inline LargeInteger operator ++(int);
+
+        inline LargeInteger operator +(const LargeInteger& other);
+        inline LargeInteger operator -(const LargeInteger& other);
+        inline LargeInteger operator *(const LargeInteger& other);
         inline LargeInteger operator /(const LargeInteger& other);
         inline LargeInteger operator %(const LargeInteger& other);
     };
@@ -78,12 +91,58 @@ namespace mag
 
     bool LargeInteger::operator ==(const LargeInteger& other)
     {
-        return m_sign == other.m_sign && multiprecision::is_same(m_data, other.m_data);
+        return m_sign == other.m_sign && multiprecision::is_equal_to(m_data, other.m_data);
     }
 
     bool LargeInteger::operator !=(const LargeInteger& other)
     {
-        return m_sign != other.m_sign || !multiprecision::is_same(m_data, other.m_data);
+        return !operator ==(other);
+    }
+
+    LargeInteger& LargeInteger::operator ++()
+    {
+        if (m_sign && m_data.dim == 1 && m_data.data[0] == 1) {
+            m_sign = 0;
+            m_data.data[0] = 0;
+        } else {
+            LargeIntegerDataStorage ret, tmp(1);
+            (m_sign ? multiprecision::subtract(ret, m_data, tmp) : multiprecision::plus(ret, m_data, tmp));
+            m_data = std::move(ret);
+        }
+        return *this;
+    }
+
+    LargeInteger LargeInteger::operator ++(int)
+    {
+        LargeInteger tmp(*this);
+        operator ++();
+        return tmp;
+    }
+
+    LargeInteger LargeInteger::operator +(const LargeInteger& other)
+    {
+        LargeInteger result;
+        if (m_sign ^ other.m_sign) {
+            multiprecision::subtract(result.m_data, other.m_data, m_data);
+            result.m_sign = (multiprecision::is_less_than(m_data, other.m_data) ? !m_sign : m_sign);
+        } else {
+            multiprecision::plus(result.m_data, m_data, other.m_data);
+            result.m_sign = m_sign;
+        }
+        return result;
+    }
+
+    LargeInteger LargeInteger::operator -(const LargeInteger& other)
+    {
+        LargeInteger result;
+        if (m_sign ^ other.m_sign) {
+            multiprecision::plus(result.m_data, m_data, other.m_data);
+            result.m_sign = m_sign;
+        } else {
+            multiprecision::subtract(result.m_data, m_data, other.m_data);
+            result.m_sign = (multiprecision::is_less_than(m_data, other.m_data) ? !m_sign : m_sign);
+        }
+        return result;
     }
 
     LargeInteger LargeInteger::operator /(const LargeInteger& other)

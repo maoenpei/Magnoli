@@ -50,7 +50,7 @@ namespace mag
         std::unique_ptr<util::MemUtil> cache;
 
         MemAllocator() {
-            cache = std::make_unique<util::MemUtil>(SIZ(4));
+            cache = std::make_unique<util::MemUtil>(SIZ(128));
         }
 
         ~MemAllocator() {
