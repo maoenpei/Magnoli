@@ -19,5 +19,6 @@ int main(int argc, char** argv)
     auto i2 = l % r;
     auto i3 = l + r;
     auto i4 = l - r;
+    auto i5 = l * r;
 	return 0;
 }

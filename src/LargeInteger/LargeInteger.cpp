@@ -156,8 +156,9 @@ namespace mag
         {
             result.reset(val.dim + shift + 1);
             for (int i = 0; i < val.dim; ++i) {
-                result.data[i + shift + 1] += (LargeIntegerData::DoubleIntType(val.data[i]) * val2) >> LargeIntegerData::IntBitCount;
-                result.data[i + shift] += val.data[i] * val2;
+                LargeIntegerData::DoubleIntType tmp = LargeIntegerData::DoubleIntType(val.data[i]) * LargeIntegerData::DoubleIntType(val2);
+                result.data[i + shift + 1] += tmp >> LargeIntegerData::IntBitCount;
+                result.data[i + shift] += tmp & LargeIntegerData::IntegerMask;
             }
             result.finalize();
         }
@@ -285,6 +286,20 @@ namespace mag
             }
         }
 
+        void divide(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2)
+        {
+            LargeIntegerDataTmp tmp;
+            internal_divide<true, false>(result, tmp, val, val2);
+            LargeIntegerDataTmp::clearCache();
+        }
+
+        void modulo(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2)
+        {
+            LargeIntegerDataTmp tmp;
+            internal_divide<false, true>(tmp, result, val, val2);
+            LargeIntegerDataTmp::clearCache();
+        }
+
         bool is_equal_to(const LargeIntegerData& val, const LargeIntegerData& val2)
         {
             return val.dim == val2.dim && 0 == memcmp(val.data, val2.data, SIZ(val.dim));
@@ -329,18 +344,17 @@ namespace mag
             }
         }
 
-        void divide(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2)
+        void multiply(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2)
         {
-            LargeIntegerDataTmp tmp;
-            internal_divide<true, false>(result, tmp, val, val2);
-            LargeIntegerDataTmp::clearCache();
-        }
-
-        void modulo(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2)
-        {
-            LargeIntegerDataTmp tmp;
-            internal_divide<false, true>(tmp, result, val, val2);
-            LargeIntegerDataTmp::clearCache();
+            result.reset(val.dim + val2.dim);
+            for (int i = 0; i < val.dim; ++i) {
+                for (int j = 0; j < val2.dim; ++j) {
+                    LargeIntegerData::DoubleIntType tmp = LargeIntegerData::DoubleIntType(val.data[i]) * LargeIntegerData::DoubleIntType(val2.data[j]);
+                    result.data[i + j + 1] = tmp >> LargeIntegerData::IntBitCount;
+                    result.data[i + j] = tmp & LargeIntegerData::IntegerMask;
+                }
+            }
+            result.finalize();
         }
     }
 }

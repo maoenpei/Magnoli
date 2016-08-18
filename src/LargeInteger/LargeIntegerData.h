@@ -12,6 +12,7 @@ namespace mag
         static const int IntBitCount = sizeof(IntegerType) * 8;
         static const IntegerType IntegerZero = IntegerType(0);
         static const IntegerType IntegerMax = ~IntegerZero;
+        static const IntegerType IntegerMask = IntegerMax;
         static const DoubleIntType DoubleIntZero = DoubleIntType(0);
         static const DoubleIntType DoubleIntMax = ~DoubleIntZero;
 

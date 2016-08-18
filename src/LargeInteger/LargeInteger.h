@@ -45,19 +45,44 @@ namespace mag
         inline LargeInteger& operator =(const LargeInteger& copy);
         inline LargeInteger& operator =(LargeInteger&& copy);
 
-        inline bool operator ==(const LargeInteger& other) const;
-        inline bool operator !=(const LargeInteger& other) const;
-
+        inline operator bool() const;
+        inline LargeInteger operator +() const;
+        inline LargeInteger operator -() const;
+        inline LargeInteger operator ~() const;
+        inline LargeInteger operator !() const;
         inline LargeInteger& operator ++();
         inline LargeInteger operator ++(int);
         inline LargeInteger& operator --();
         inline LargeInteger operator --(int);
+
+        inline bool operator ==(const LargeInteger& other) const;
+        inline bool operator !=(const LargeInteger& other) const;
+        inline bool operator <(const LargeInteger& other) const;
+        inline bool operator >(const LargeInteger& other) const;
+        inline bool operator <=(const LargeInteger& other) const;
+        inline bool operator >=(const LargeInteger& other) const;
 
         inline LargeInteger operator +(const LargeInteger& other) const;
         inline LargeInteger operator -(const LargeInteger& other) const;
         inline LargeInteger operator *(const LargeInteger& other) const;
         inline LargeInteger operator /(const LargeInteger& other) const;
         inline LargeInteger operator %(const LargeInteger& other) const;
+        inline LargeInteger operator ^(const LargeInteger& other) const;
+        inline LargeInteger operator &(const LargeInteger& other) const;
+        inline LargeInteger operator |(const LargeInteger& other) const;
+        inline LargeInteger operator <<(int shift) const;
+        inline LargeInteger operator >>(int shift) const;
+
+        inline LargeInteger& operator +=(const LargeInteger& other);
+        inline LargeInteger& operator -=(const LargeInteger& other);
+        inline LargeInteger& operator *=(const LargeInteger& other);
+        inline LargeInteger& operator /=(const LargeInteger& other);
+        inline LargeInteger& operator %=(const LargeInteger& other);
+        inline LargeInteger& operator ^=(const LargeInteger& other);
+        inline LargeInteger& operator &=(const LargeInteger& other);
+        inline LargeInteger& operator |=(const LargeInteger& other);
+        inline LargeInteger& operator <<=(int shift);
+        inline LargeInteger& operator >>=(int shift);
     };
 
     void LargeInteger::sign(int sign)
@@ -102,16 +127,6 @@ namespace mag
         return *this;
     }
 
-    bool LargeInteger::operator ==(const LargeInteger& other) const
-    {
-        return m_sign == other.m_sign && multiprecision::is_equal_to(m_data, other.m_data);
-    }
-
-    bool LargeInteger::operator !=(const LargeInteger& other) const
-    {
-        return !operator ==(other);
-    }
-
     LargeInteger& LargeInteger::operator ++()
     {
         if (m_sign && multiprecision::is_one(m_data)) {
@@ -152,6 +167,16 @@ namespace mag
         return result;
     }
 
+    bool LargeInteger::operator ==(const LargeInteger& other) const
+    {
+        return m_sign == other.m_sign && multiprecision::is_equal_to(m_data, other.m_data);
+    }
+
+    bool LargeInteger::operator !=(const LargeInteger& other) const
+    {
+        return !operator ==(other);
+    }
+
     LargeInteger LargeInteger::operator +(const LargeInteger& other) const
     {
         LargeInteger result;
@@ -175,6 +200,14 @@ namespace mag
             int v = multiprecision::subtract(result.m_data, m_data, other.m_data);
             result.sign(v ^ m_sign);
         }
+        return result;
+    }
+
+    LargeInteger LargeInteger::operator *(const LargeInteger& other) const
+    {
+        LargeInteger result;
+        multiprecision::multiply(result.m_data, m_data, other.m_data);
+        result.sign(m_sign ^ other.m_sign);
         return result;
     }
 
