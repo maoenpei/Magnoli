@@ -316,14 +316,16 @@ namespace mag
             result.finalize();
         }
 
-        void subtract(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2)
+        int subtract(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2)
         {
             if (internal_compare(val, val2, std::less<>())) {
                 result.reset(val2);
                 internal_subtract(result, val);
+                return 1;
             } else {
                 result.reset(val);
                 internal_subtract(result, val2);
+                return 0;
             }
         }
 

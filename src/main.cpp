@@ -14,14 +14,10 @@ int main(int argc, char** argv)
         mag::multiprecision::divide(v1, v3, v4);
         mag::multiprecision::modulo(v2, v3, v4);
     //}
-    mag::LargeInteger l3, l4;
-    l3.m_data.reset(5);
-    l3.m_data.data[4] = 101;
-    l4.m_data.reset(3);
-    l4.m_data.data[2] = 101;
-    l4.m_data.data[0] = 0xffffffff;
-    auto l1 = l3 / l4;
-    auto l2 = l3 % l4;
-    l1++;
+    mag::LargeInteger l(22), r(-33);
+    auto i1 = l / r;
+    auto i2 = l % r;
+    auto i3 = l + r;
+    auto i4 = l - r;
 	return 0;
 }
