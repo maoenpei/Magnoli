@@ -20,5 +20,7 @@ int main(int argc, char** argv)
     auto i3 = l + r;
     auto i4 = l - r;
     auto i5 = l * r;
+    mag::LargeInteger t(1, {3, 4, 5, 6, 7});
+    t += l;
 	return 0;
 }

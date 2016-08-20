@@ -2,6 +2,7 @@
 
 #include "LargeIntegerData.h"
 #include <cmath>
+#include <initializer_list>
 #include <type_traits>
 
 namespace mag
@@ -26,6 +27,13 @@ namespace mag
         void multiply(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2);
         void divide(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2);
         void modulo(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2);
+
+        void inverse(LargeIntegerData& result, const LargeIntegerData& val);
+        void xor(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2);
+        void and(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2);
+        void or(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2);
+        void lshift(LargeIntegerData& result, const LargeIntegerData& val, int shift);
+        void rshift(LargeIntegerData& result, const LargeIntegerData& val, int shift);
     }
 
     class LargeInteger
@@ -38,6 +46,7 @@ namespace mag
     public:
         inline LargeInteger();
         inline LargeInteger(int val);
+        inline LargeInteger(int sign, std::initializer_list<LargeIntegerData::IntegerType> list);
         inline LargeInteger(const LargeInteger& copy);
         inline LargeInteger(LargeInteger&& copy);
         inline ~LargeInteger();
@@ -48,7 +57,6 @@ namespace mag
         inline operator bool() const;
         inline LargeInteger operator +() const;
         inline LargeInteger operator -() const;
-        inline LargeInteger operator ~() const;
         inline LargeInteger operator !() const;
         inline LargeInteger& operator ++();
         inline LargeInteger operator ++(int);
@@ -67,6 +75,8 @@ namespace mag
         inline LargeInteger operator *(const LargeInteger& other) const;
         inline LargeInteger operator /(const LargeInteger& other) const;
         inline LargeInteger operator %(const LargeInteger& other) const;
+
+        inline LargeInteger operator ~() const;
         inline LargeInteger operator ^(const LargeInteger& other) const;
         inline LargeInteger operator &(const LargeInteger& other) const;
         inline LargeInteger operator |(const LargeInteger& other) const;
@@ -100,6 +110,11 @@ namespace mag
         , m_sign(val < 0)
     {}
 
+    LargeInteger::LargeInteger(int sign, std::initializer_list<LargeIntegerData::IntegerType> list)
+        : m_data(list)
+        , m_sign(!!sign)
+    {}
+
     LargeInteger::LargeInteger(const LargeInteger& copy)
         : m_data(copy.m_data)
         , m_sign(copy.m_sign)
@@ -127,6 +142,28 @@ namespace mag
         return *this;
     }
 
+    LargeInteger::operator bool() const
+    {
+        return !multiprecision::is_zero(m_data);
+    }
+
+    LargeInteger LargeInteger::operator +() const
+    {
+        return LargeInteger(*this);
+    }
+
+    LargeInteger LargeInteger::operator -() const
+    {
+        LargeInteger result;
+        result.sign(!m_sign);
+        return result;
+    }
+
+    LargeInteger LargeInteger::operator !() const
+    {
+        return LargeInteger(multiprecision::is_zero(m_data) ? 1 : 0);
+    }
+
     LargeInteger& LargeInteger::operator ++()
     {
         if (m_sign && multiprecision::is_one(m_data)) {
@@ -149,7 +186,7 @@ namespace mag
 
     LargeInteger& LargeInteger::operator --()
     {
-        if (!m_sign && multiprecision::is_zero(m_data)) {
+        if (multiprecision::is_zero(m_data)) {
             m_data.data[0] = 1;
             m_sign = 1;
         } else {
@@ -175,6 +212,42 @@ namespace mag
     bool LargeInteger::operator !=(const LargeInteger& other) const
     {
         return !operator ==(other);
+    }
+
+    bool LargeInteger::operator <(const LargeInteger& other) const
+    {
+        if (m_sign ^ other.m_sign) {
+            return !!m_sign;
+        } else {
+            return (m_sign ? multiprecision::is_greater_than(m_data, other.m_data) : multiprecision::is_less_than(m_data, other.m_data));
+        }
+    }
+
+    bool LargeInteger::operator >(const LargeInteger& other) const
+    {
+        if (m_sign ^ other.m_sign) {
+            return !m_sign;
+        } else {
+            return (m_sign ? multiprecision::is_less_than(m_data, other.m_data) : multiprecision::is_greater_than(m_data, other.m_data));
+        }
+    }
+
+    bool LargeInteger::operator <=(const LargeInteger& other) const
+    {
+        if (m_sign ^ other.m_sign) {
+            return !!m_sign;
+        } else {
+            return (m_sign ? !multiprecision::is_less_than(m_data, other.m_data) : !multiprecision::is_greater_than(m_data, other.m_data));
+        }
+    }
+
+    bool LargeInteger::operator >=(const LargeInteger& other) const
+    {
+        if (m_sign ^ other.m_sign) {
+            return !m_sign;
+        } else {
+            return (m_sign ? !multiprecision::is_greater_than(m_data, other.m_data) : !multiprecision::is_less_than(m_data, other.m_data));
+        }
     }
 
     LargeInteger LargeInteger::operator +(const LargeInteger& other) const
@@ -226,4 +299,103 @@ namespace mag
         result.sign(m_sign);
         return result;
     }
+
+    LargeInteger LargeInteger::operator ~() const
+    {
+        LargeInteger result;
+        multiprecision::inverse(result.m_data, m_data);
+        result.sign(!m_sign);
+        return result;
+    }
+    
+    LargeInteger LargeInteger::operator ^(const LargeInteger& other) const
+    {
+        LargeInteger result;
+        multiprecision::xor(result.m_data, m_data, other.m_data);
+        result.sign(m_sign ^ other.m_sign);
+        return result;
+    }
+
+    LargeInteger LargeInteger::operator &(const LargeInteger& other) const
+    {
+        LargeInteger result;
+        multiprecision::and(result.m_data, m_data, other.m_data);
+        result.sign(m_sign & other.m_sign);
+        return result;
+    }
+
+    LargeInteger LargeInteger::operator |(const LargeInteger& other) const
+    {
+        LargeInteger result;
+        multiprecision::or(result.m_data, m_data, other.m_data);
+        result.sign(m_sign | other.m_sign);
+        return result;
+    }
+
+    LargeInteger LargeInteger::operator <<(int shift) const
+    {
+        LargeInteger result;
+        multiprecision::lshift(result.m_data, m_data, shift);
+        result.sign(m_sign);
+        return result;
+    }
+
+    LargeInteger LargeInteger::operator >>(int shift) const
+    {
+        LargeInteger result;
+        multiprecision::rshift(result.m_data, m_data, shift);
+        result.sign(m_sign);
+        return result;
+    }
+
+    LargeInteger& LargeInteger::operator +=(const LargeInteger& other)
+    {
+        return operator =(operator +(other));
+    }
+
+    LargeInteger& LargeInteger::operator -=(const LargeInteger& other)
+    {
+        return operator =(operator -(other));
+    }
+
+    LargeInteger& LargeInteger::operator *=(const LargeInteger& other)
+    {
+        return operator =(operator *(other));
+    }
+
+    LargeInteger& LargeInteger::operator /=(const LargeInteger& other)
+    {
+        return operator =(operator /(other));
+    }
+
+    LargeInteger& LargeInteger::operator %=(const LargeInteger& other)
+    {
+        return operator =(operator %(other));
+    }
+
+    LargeInteger& LargeInteger::operator ^=(const LargeInteger& other)
+    {
+        return operator =(operator ^(other));
+    }
+
+    LargeInteger& LargeInteger::operator &=(const LargeInteger& other)
+    {
+        return operator =(operator &(other));
+    }
+
+    LargeInteger& LargeInteger::operator |=(const LargeInteger& other)
+    {
+        return operator =(operator |(other));
+    }
+
+    LargeInteger&LargeInteger:: operator <<=(int shift)
+    {
+        return operator =(operator <<(shift));
+    }
+
+    LargeInteger&LargeInteger:: operator >>=(int shift)
+    {
+        return operator =(operator >>(shift));
+    }
+
 }

@@ -1,7 +1,8 @@
 #pragma once
 
-#include <type_traits>
 #include <memory>
+#include <initializer_list>
+#include <type_traits>
 
 namespace mag
 {
@@ -69,6 +70,7 @@ namespace mag
         int size;
         LargeIntegerDataStorage();
         LargeIntegerDataStorage(IntegerType val);
+        LargeIntegerDataStorage(std::initializer_list<LargeIntegerData::IntegerType> list);
         LargeIntegerDataStorage(const LargeIntegerDataStorage& copy);
         LargeIntegerDataStorage(LargeIntegerDataStorage&& copy);
         ~LargeIntegerDataStorage();

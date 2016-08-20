@@ -94,6 +94,13 @@ namespace mag
         data[0] = val;
     }
 
+    LargeIntegerDataStorage::LargeIntegerDataStorage(std::initializer_list<LargeIntegerData::IntegerType> list)
+        : LargeIntegerDataStorage()
+    {
+        reset(list.end() - list.begin());
+        memcpy(data, list.begin(), SIZ(dim));
+    }
+
     LargeIntegerDataStorage::LargeIntegerDataStorage(const LargeIntegerDataStorage& copy)
         : LargeIntegerDataStorage()
     {

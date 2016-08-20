@@ -39,14 +39,12 @@ namespace mag
             return 0;
         }
 
-        // Not mentioned
         inline static void internal_lshift_int(LargeIntegerData& result, const LargeIntegerData&val, int shift)
         {
             result.reset(val.dim + shift);
             memcpy(&result.data[shift], &val.data[0], SIZ(val.dim));
         }
 
-        // Not mentioned
         inline static void internal_lshift_bits(LargeIntegerData& result, const LargeIntegerData& val, const util::DataPos& offset)
         {
             if (offset.o == 0) {
@@ -63,18 +61,45 @@ namespace mag
                 result.reset(val.dim + offset.p);
             }
             for (int i = val.dim - 1; i > 0; --i) {
-                result.data[i + offset.p] = (val.data[i] << offset.o) | (val.data[i-1] >> (LargeIntegerData::IntBitCount - offset.o));
+                result.data[i + offset.p] = (val.data[i] << offset.o) | (val.data[i - 1] >> (LargeIntegerData::IntBitCount - offset.o));
             }
             result.data[offset.p] = val.data[0] << offset.o;
         }
 
-        // Not mentioned
-        inline static util::DataPos internal_pos(const LargeIntegerData& val)
+        inline static void internal_rshift_int(LargeIntegerData& result, const LargeIntegerData&val, int shift)
         {
-            return util::DataPos(
-                val.dim,
-                util::SeekBit<LargeIntegerData::IntegerType>::highest_one(val.data[val.dim - 1])
-                );
+            if (val.dim <= shift) {
+                result.reset(1);
+                return;
+            }
+
+            result.reset(val.dim - shift);
+            memcpy(&result.data[0], &val.data[shift], SIZ(result.dim));
+        }
+
+        inline static void internal_rshift_bits(LargeIntegerData& result, const LargeIntegerData& val, const util::DataPos& offset)
+        {
+            if (offset.o == 0) {
+                internal_rshift_int(result, val, offset.p);
+                return;
+            }
+
+            LargeIntegerData::IntegerType first = val.data[val.dim - 1] >> offset.o;
+
+            if ((first && val.dim <= offset.p) || (!first && val.dim <= offset.p - 1)) {
+                result.reset(1);
+                return;
+            }
+
+            if (first) {
+                result.reset(val.dim - offset.p);
+                result.data[result.dim - 1] = first;
+            } else {
+                result.reset(val.dim - offset.p - 1);
+            }
+            for (int i = val.dim - offset.p - 2; i >= 0; --i) {
+                result.data[i] = (val.data[i + offset.p] >> offset.o) | (val.data[i + offset.p + 1] << (LargeIntegerData::IntBitCount - offset.o));
+            }
         }
 
         inline static void internal_subtract(LargeIntegerData& val, const LargeIntegerData& val2)
@@ -87,6 +112,15 @@ namespace mag
                 val.data[i] = tmp2;
             }
             val.finalize();
+        }
+
+        // Not mentioned
+        inline static util::DataPos internal_pos(const LargeIntegerData& val)
+        {
+            return util::DataPos(
+                val.dim,
+                util::SeekBit<LargeIntegerData::IntegerType>::highest_one(val.data[val.dim - 1])
+                );
         }
 
         // Not mentioned
@@ -355,6 +389,50 @@ namespace mag
                 }
             }
             result.finalize();
+        }
+
+        void inverse(LargeIntegerData& result, const LargeIntegerData& val)
+        {
+            result.reset(val.dim);
+            for (int i = 0; i < result.dim; ++i) {
+                result.data[i] = ~val.data[i];
+            }
+            result.finalize();
+        }
+
+        void xor(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2)
+        {
+            result.reset(std::max(val.dim, val2.dim));
+            for (int i = 0; i < result.dim; ++i) {
+                result.data[i] = val.data[i] ^ val2.data[i];
+            }
+        }
+
+        void and(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2)
+        {
+            result.reset(std::min(val.dim, val2.dim));
+            for (int i = 0; i < result.dim; ++i) {
+                result.data[i] = val.data[i] & val2.data[i];
+            }
+            result.finalize();
+        }
+
+        void or(LargeIntegerData& result, const LargeIntegerData& val, const LargeIntegerData& val2)
+        {
+            result.reset(std::max(val.dim, val2.dim));
+            for (int i = 0; i < result.dim; ++i) {
+                result.data[i] = val.data[i] | val2.data[i];
+            }
+        }
+
+        void lshift(LargeIntegerData& result, const LargeIntegerData& val, int shift)
+        {
+            internal_lshift_bits(result, val, shift);
+        }
+
+        void rshift(LargeIntegerData& result, const LargeIntegerData& val, int shift)
+        {
+            internal_rshift_bits(result, val, shift);
         }
     }
 }

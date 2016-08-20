@@ -11,6 +11,7 @@ namespace mag
             int p;
             int o;
             inline DataPos();
+            inline DataPos(int shift);
             inline DataPos(int p, int o);
             inline DataPos(const DataPos& other);
 
@@ -22,6 +23,11 @@ namespace mag
         DataPos::DataPos()
             : p(0)
             , o(0)
+        {}
+
+        DataPos::DataPos(int shift)
+            : p(shift / LargeIntegerData::IntBitCount)
+            , o(shift % LargeIntegerData::IntBitCount)
         {}
 
         DataPos::DataPos(int p, int o)
