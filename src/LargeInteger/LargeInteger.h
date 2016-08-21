@@ -388,12 +388,12 @@ namespace mag
         return operator =(operator |(other));
     }
 
-    LargeInteger&LargeInteger:: operator <<=(int shift)
+    LargeInteger& LargeInteger:: operator <<=(int shift)
     {
         return operator =(operator <<(shift));
     }
 
-    LargeInteger&LargeInteger:: operator >>=(int shift)
+    LargeInteger& LargeInteger:: operator >>=(int shift)
     {
         return operator =(operator >>(shift));
     }
